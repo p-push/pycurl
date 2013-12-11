@@ -33,9 +33,12 @@ e.g. one in /usr/lib and one in /usr/local/lib.
 Windows
 -------
 
-When installing on Windows, you need to manually configure the path to
-the curl source tree, specified with the CURL_DIR variable in the file
-'setup.py'.  The CURL_DIR variable can also be set using the
-commandline option '--curl-dir' when invoking setup.py:
+First, you will need to obtain compiled dependencies. At the very least
+you will need libcurl. You can build libcurl yourself which will allow
+you to configure which SSL library is used and so on.
 
-    python setup.py install --curl-dir=c:\curl-7.10.5
+When installing on Windows, you need to manually specify the path to
+the compiled curl directory containing headers and libraries via
+--curl-dir option to setup.py as follows:
+
+    python setup.py --curl-dir=c:\dev\curl-7.33.0\builds\libcurl-vc-x86-release-dll-ipv6-sspi-spnego-winssl
