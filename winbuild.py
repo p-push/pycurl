@@ -11,6 +11,7 @@ archives_path = os.path.join(root, 'archives')
 state_path = os.path.join(root, 'state')
 git_bin_path = os.path.join(git_root, 'bin')
 git_path = os.path.join(git_bin_path, 'git')
+rm_path = os.path.join(git_bin_path, 'rm')
 tar_path = ['tar']
 
 try:
@@ -68,12 +69,14 @@ def work():
 		step(build_curl)
 		
 		def build_pycurl():
-			fetch('http://pycurl.sourceforge.net/download/pycurl-%s.tar.gz' % pycurl_version)
+			#fetch('http://pycurl.sourceforge.net/download/pycurl-%s.tar.gz' % pycurl_version)
 			if os.path.exists('pycurl-%s' % pycurl_version):
-				shutil.rmtree('pycurl-%s' % pycurl_version)
-			subprocess.check_call([tar_path, 'xf', 'pycurl-%s.tar.gz' % pycurl_version])
+				#shutil.rmtree('pycurl-%s' % pycurl_version)
+				subprocess.check_call([rm_path, '-rf', 'pycurl-%s' % pycurl_version])
+			#subprocess.check_call([tar_path, 'xf', 'pycurl-%s.tar.gz' % pycurl_version])
+			shutil.copytree('c:/dev/pycurl', 'pycurl-%s' % pycurl_version)
 			with in_dir(os.path.join('pycurl-%s' % pycurl_version)):
-				subprocess.check_call([python_path, 'setup.py', 'build'])
+				subprocess.check_call([python_path, 'setup.py', 'build', '--curl-dir=../curl-%s/builds/libcurl-vc-x86-release-dll-ipv6-sspi-spnego-winssl' % libcurl_version])
 		step(build_pycurl)
 
 work()
