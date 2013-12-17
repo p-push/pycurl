@@ -89,7 +89,7 @@ def work():
 				shutil.copy(os.path.join(curl_dir, 'bin', 'libcurl.dll'), 'build/lib.win32-%s' % python_version)
 				subprocess.check_call([python_path, 'setup.py', target, '--curl-dir=%s' % curl_dir])
 				if target == 'bdist':
-					os.rename('dist/pycurl-%s.win32.zip' % pycurl_version, 'dist/pycurl-%s.python%s.win32.zip' % (pycurl_version, python_version))
+					os.rename('dist/pycurl-%s.win32.zip' % pycurl_version, 'dist/pycurl-%s.win32-py%s.zip' % (pycurl_version, python_version))
 		
 		prepare_pycurl()
 		for python_version in python_versions:
