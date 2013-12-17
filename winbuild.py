@@ -77,15 +77,17 @@ def work():
 			#subprocess.check_call([tar_path, 'xf', 'pycurl-%s.tar.gz' % pycurl_version])
 			shutil.copytree('c:/dev/pycurl', 'pycurl-%s' % pycurl_version)
 		
-		def build_pycurl(python_version):
+		def build_pycurl(python_version, target):
 			python_path = python_path_template % python_version.replace('.', '')
 			
 			with in_dir(os.path.join('pycurl-%s' % pycurl_version)):
-				subprocess.check_call([python_path, 'setup.py', 'bdist', '--curl-dir=../curl-%s/builds/libcurl-vc-x86-release-dll-ipv6-sspi-spnego-winssl' % libcurl_version])
-				os.rename('dist/pycurl-%s.win32.zip' % pycurl_version, 'dist/pycurl-%s.python%s.win32.zip' % (pycurl_version, python_version))
+				subprocess.check_call([python_path, 'setup.py', target, '--curl-dir=../curl-%s/builds/libcurl-vc-x86-release-dll-ipv6-sspi-spnego-winssl' % libcurl_version])
+				if target == 'bdist':
+					os.rename('dist/pycurl-%s.win32.zip' % pycurl_version, 'dist/pycurl-%s.python%s.win32.zip' % (pycurl_version, python_version))
 		
 		prepare_pycurl()
 		for python_version in python_versions:
-			build_pycurl(python_version)
+			for target in ['bdist', 'bdist_wininst']:
+				build_pycurl(python_version, target)
 
 work()
