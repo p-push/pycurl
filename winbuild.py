@@ -81,7 +81,13 @@ def work():
 			python_path = python_path_template % python_version.replace('.', '')
 			
 			with in_dir(os.path.join('pycurl-%s' % pycurl_version)):
-				subprocess.check_call([python_path, 'setup.py', target, '--curl-dir=../curl-%s/builds/libcurl-vc-x86-release-dll-ipv6-sspi-spnego-winssl' % libcurl_version])
+				libcurl_build_name = 'libcurl-vc-x86-release-dll-ipv6-sspi-spnego-winssl'
+				curl_dir = '../curl-%s/builds/%s' % (libcurl_version, libcurl_build_name)
+				if not os.path.exists('build/lib.win32-%s' % python_version):
+					# exists for building additional targets for the same python version
+					os.makedirs('build/lib.win32-%s' % python_version)
+				shutil.copy(os.path.join(curl_dir, 'bin', 'libcurl.dll'), 'build/lib.win32-%s' % python_version)
+				subprocess.check_call([python_path, 'setup.py', target, '--curl-dir=%s' % curl_dir])
 				if target == 'bdist':
 					os.rename('dist/pycurl-%s.win32.zip' % pycurl_version, 'dist/pycurl-%s.python%s.win32.zip' % (pycurl_version, python_version))
 		
