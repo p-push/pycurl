@@ -1,12 +1,14 @@
 root = 'c:/dev/build-pycurl'
 # where msysgit is installed
 git_root = 'c:/program files/git'
+python_path = '/python27/python'
 libcurl_version = '7.34.0'
 pycurl_version = '7.19.0.2'
 
 import os, os.path, sys, subprocess, shutil, contextlib
 
 archives_path = os.path.join(root, 'archives')
+state_path = os.path.join(root, 'state')
 git_bin_path = os.path.join(git_root, 'bin')
 git_path = os.path.join(git_bin_path, 'git')
 tar_path = ['tar']
@@ -39,6 +41,16 @@ def in_dir(dir):
 	finally:
 		os.chdir(old_cwd)
 
+@contextlib.contextmanager
+def step(step):
+	if not os.path.exists(state_path):
+		os.makedirs(state_path)
+	state_file_path = os.path.join(state_path, step)
+	if not os.path.exists(state_file_path):
+		yield
+	with open(state_file_path, 'w') as f:
+		pass
+		
 def work():
 	os.environ['PATH'] += ";%s" % git_bin_path
 	if not os.path.exists(archives_path):
