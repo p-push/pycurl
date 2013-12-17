@@ -42,12 +42,13 @@ def in_dir(dir):
 		os.chdir(old_cwd)
 
 @contextlib.contextmanager
-def step(step):
+def step(step_fn):
+	step = step_fn.__name__
 	if not os.path.exists(state_path):
 		os.makedirs(state_path)
 	state_file_path = os.path.join(state_path, step)
 	if not os.path.exists(state_file_path):
-		yield
+		step_fn()
 	with open(state_file_path, 'w') as f:
 		pass
 		
@@ -56,7 +57,7 @@ def work():
 	if not os.path.exists(archives_path):
 		os.makedirs(archives_path)
 	with in_dir(archives_path):
-		with step('build_curl'):
+		def build_curl():
 			fetch('http://curl.haxx.se/download/curl-%s.tar.gz' % libcurl_version)
 			if os.path.exists('curl-%s' % libcurl_version):
 				shutil.rmtree('curl-%s' % libcurl_version)
@@ -64,13 +65,15 @@ def work():
 			with in_dir(os.path.join('curl-%s' % libcurl_version, 'winbuild')):
 				subprocess.check_call(['nmake', '/f', 'Makefile.vc', 'mode=static', 'ENABLE_IDN=no'])
 				subprocess.check_call(['nmake', '/f', 'Makefile.vc', 'mode=dll', 'ENABLE_IDN=no'])
+		step(build_curl)
 		
-		with step('build_pycurl'):
+		def build_pycurl():
 			fetch('http://pycurl.sourceforge.net/download/pycurl-%s.tar.gz' % pycurl_version)
 			if os.path.exists('pycurl-%s' % pycurl_version):
 				shutil.rmtree('pycurl-%s' % pycurl_version)
 			subprocess.check_call([tar_path, 'xf', 'pycurl-%s.tar.gz' % pycurl_version])
 			with in_dir(os.path.join('pycurl-%s' % pycurl_version)):
 				subprocess.check_call([python_path, 'setup.py', 'build'])
+		step(build_pycurl)
 
 work()
