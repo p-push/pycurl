@@ -82,7 +82,7 @@ if sys.platform == "win32":
         fail("Curl directory does not exist: %s" % curl_dir)
     if not os.path.isdir(curl_dir):
         fail("Curl directory is not a directory: %s" % curl_dir)
-    print("Using curl directory: %s" % curl_dir)
+    sys.stdout.write("Using curl directory: %s\n" % curl_dir)
     include_dirs.append(os.path.join(curl_dir, "include"))
     libcurl_lib_path = os.path.join(curl_dir, "lib", "libcurl.lib")
     if not os.path.exists(libcurl_lib_path):
@@ -117,7 +117,7 @@ else:
             msg += ":\n" + stderr.decode()
         raise ConfigurationError(msg)
     libcurl_version = stdout.decode().strip()
-    print("Using %s (%s)" % (CURL_CONFIG, libcurl_version))
+    sys.stdout.write("Using %s (%s)\n" % (CURL_CONFIG, libcurl_version))
     p = subprocess.Popen((CURL_CONFIG, '--cflags'),
         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = p.communicate()
