@@ -1,7 +1,8 @@
 root = 'c:/dev/build-pycurl'
 # where msysgit is installed
 git_root = 'c:/program files/git'
-python_path = '/python27/python'
+python_versions = ['2.6', '2.7']
+python_path_template = 'c:/python%s/python'
 libcurl_version = '7.34.0'
 pycurl_version = '7.19.0.2'
 
@@ -68,15 +69,23 @@ def work():
 				subprocess.check_call(['nmake', '/f', 'Makefile.vc', 'mode=dll', 'ENABLE_IDN=no'])
 		step(build_curl)
 		
-		def build_pycurl():
+		def prepare_pycurl():
 			#fetch('http://pycurl.sourceforge.net/download/pycurl-%s.tar.gz' % pycurl_version)
 			if os.path.exists('pycurl-%s' % pycurl_version):
 				#shutil.rmtree('pycurl-%s' % pycurl_version)
 				subprocess.check_call([rm_path, '-rf', 'pycurl-%s' % pycurl_version])
 			#subprocess.check_call([tar_path, 'xf', 'pycurl-%s.tar.gz' % pycurl_version])
 			shutil.copytree('c:/dev/pycurl', 'pycurl-%s' % pycurl_version)
+		
+		def build_pycurl(python_version):
+			python_path = python_path_template % python_version.replace('.', '')
+			
 			with in_dir(os.path.join('pycurl-%s' % pycurl_version)):
 				subprocess.check_call([python_path, 'setup.py', 'bdist', '--curl-dir=../curl-%s/builds/libcurl-vc-x86-release-dll-ipv6-sspi-spnego-winssl' % libcurl_version])
-		build_pycurl()
+				os.rename('dist/pycurl-%s.win32.zip' % pycurl_version, 'dist/pycurl-%s.python%s.win32.zip' % (pycurl_version, python_version))
+		
+		prepare_pycurl()
+		for python_version in python_versions:
+			build_pycurl(python_version)
 
 work()
