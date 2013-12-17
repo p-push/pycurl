@@ -76,7 +76,7 @@ def work():
 			#subprocess.check_call([tar_path, 'xf', 'pycurl-%s.tar.gz' % pycurl_version])
 			shutil.copytree('c:/dev/pycurl', 'pycurl-%s' % pycurl_version)
 			with in_dir(os.path.join('pycurl-%s' % pycurl_version)):
-				subprocess.check_call([python_path, 'setup.py', 'build', '--curl-dir=../curl-%s/builds/libcurl-vc-x86-release-dll-ipv6-sspi-spnego-winssl' % libcurl_version])
-		step(build_pycurl)
+				subprocess.check_call([python_path, 'setup.py', 'bdist', '--curl-dir=../curl-%s/builds/libcurl-vc-x86-release-dll-ipv6-sspi-spnego-winssl' % libcurl_version])
+		build_pycurl()
 
 work()
