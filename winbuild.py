@@ -11,6 +11,10 @@ libcurl_version = '7.34.0'
 # pycurl version to build, we should know this ourselves
 pycurl_version = '7.19.0.2'
 
+# dependencies
+libidn_version = '1.28'
+zlib_version = '1.2.8'
+
 import os, os.path, sys, subprocess, shutil, contextlib
 
 archives_path = os.path.join(root, 'archives')
@@ -19,6 +23,7 @@ git_bin_path = os.path.join(git_root, 'bin')
 git_path = os.path.join(git_bin_path, 'git')
 rm_path = os.path.join(git_bin_path, 'rm')
 tar_path = os.path.join(git_bin_path, 'tar')
+unzip_path = os.path.join(git_bin_path, 'unzip')
 
 try:
     from urllib.request import urlopen
@@ -64,15 +69,52 @@ def work():
 	if not os.path.exists(archives_path):
 		os.makedirs(archives_path)
 	with in_dir(archives_path):
+		def build_libidn():
+			fetch('http://mirror.nexcess.net/gnu/libidn/libidn-%s.tar.gz' % libidn_version)
+			# libidn makefile hardcodes 1.31.1?
+			fetch('http://mirror.nexcess.net/gnu/libiconv/libiconv-1.13.1.tar.gz')
+			if os.path.exists('libidn-%s' % libidn_version):
+				shutil.rmtree('libidn-%s' % libidn_version)
+			subprocess.check_call([tar_path, 'xf', 'libidn-%s.tar.gz' % libidn_version])
+			shutil.copy('libiconv-1.13.1.tar.gz', 'libidn-%s' % libidn_version)
+			with in_dir(os.path.join('libidn-%s' % libidn_version, 'windows')):
+				subprocess.check_call(['nmake', '/f', 'libidn4win.mk', 'libidn4win'])
+		#build_libidn()
+		
+		def fetch_libidn():
+			fetch('http://mirror.nexcess.net/gnu/libidn/libidn-%s-win32.zip' % libidn_version)
+			if os.path.exists('deps'):
+				shutil.rmtree('deps')
+			os.mkdir('deps')
+			with in_dir('deps'):
+				subprocess.check_call([unzip_path, '../libidn-%s-win32.zip' % libidn_version])
+		step(fetch_libidn)
+		
+		def build_zlib():
+			fetch('http://softlayer-ams.dl.sourceforge.net/project/libpng/zlib/%s/zlib-%s.tar.gz' % (zlib_version, zlib_version))
+			if os.path.exists('zlib-%s' % zlib_version):
+				shutil.rmtree('zlib-%s' % zlib_version)
+			subprocess.check_call([tar_path, 'xf', 'zlib-%s.tar.gz' % zlib_version])
+			with in_dir('zlib-%s' % zlib_version):
+				subprocess.check_call(['nmake', '/f', 'win32/Makefile.msc'])
+			shutil.copy('zlib-%s/zlib.h' % zlib_version, 'deps/include')
+			shutil.copy('zlib-%s/zconf.h' % zlib_version, 'deps/include')
+			shutil.copy('zlib-%s/zdll.lib' % zlib_version, 'deps/lib')
+			shutil.copy('zlib-%s/zdll.exp' % zlib_version, 'deps/lib')
+			shutil.copy('zlib-%s/zlib.lib' % zlib_version, 'deps/lib')
+			shutil.copy('zlib-%s/zlib1.dll' % zlib_version, 'deps/bin')
+		step(build_zlib)
+		
 		def build_curl():
 			fetch('http://curl.haxx.se/download/curl-%s.tar.gz' % libcurl_version)
 			if os.path.exists('curl-%s' % libcurl_version):
 				shutil.rmtree('curl-%s' % libcurl_version)
 			subprocess.check_call([tar_path, 'xf', 'curl-%s.tar.gz' % libcurl_version])
 			with in_dir(os.path.join('curl-%s' % libcurl_version, 'winbuild')):
-				subprocess.check_call(['nmake', '/f', 'Makefile.vc', 'mode=static', 'ENABLE_IDN=no'])
-				subprocess.check_call(['nmake', '/f', 'Makefile.vc', 'mode=dll', 'ENABLE_IDN=no'])
-		step(build_curl)
+				#subprocess.check_call(['nmake', '/f', 'Makefile.vc', 'mode=static', 'ENABLE_IDN=no'])
+				#subprocess.check_call(['nmake', '/f', 'Makefile.vc', 'mode=dll', 'ENABLE_IDN=no'])
+				subprocess.check_call(['nmake', '/f', 'Makefile.vc', 'mode=dll', 'ENABLE_IDN=yes', 'LIBIDN_PATH=../../libidn-%s' % libidn_version, 'WITH_ZLIB=dll'])
+		build_curl()
 		
 		def prepare_pycurl():
 			#fetch('http://pycurl.sourceforge.net/download/pycurl-%s.tar.gz' % pycurl_version)
