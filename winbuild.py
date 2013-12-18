@@ -13,7 +13,7 @@ state_path = os.path.join(root, 'state')
 git_bin_path = os.path.join(git_root, 'bin')
 git_path = os.path.join(git_bin_path, 'git')
 rm_path = os.path.join(git_bin_path, 'rm')
-tar_path = ['tar']
+tar_path = os.path.join(git_bin_path, 'tar')
 
 try:
     from urllib.request import urlopen
