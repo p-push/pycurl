@@ -1,9 +1,14 @@
+# work directory for downloading dependencies and building everything
 root = 'c:/dev/build-pycurl'
 # where msysgit is installed
 git_root = 'c:/program files/git'
+# which versions of python to build against
 python_versions = ['2.6', '2.7']
+# where pythons are installed
 python_path_template = 'c:/python%s/python'
+# which version of libcurl to use, will be downloaded from the internet
 libcurl_version = '7.34.0'
+# pycurl version to build, we should know this ourselves
 pycurl_version = '7.19.0.2'
 
 import os, os.path, sys, subprocess, shutil, contextlib
