@@ -51,6 +51,23 @@ def scan_argv(s, default=None):
     return p
 
 
+try:
+    subprocess_check_output = subprocess.check_output
+except AttributeError:
+    # copied from python 2.7
+    def subprocess_check_output(*popenargs, **kwargs):
+        if 'stdout' in kwargs:
+            raise ValueError('stdout argument not allowed, it will be overridden.')
+        process = Popen(stdout=PIPE, *popenargs, **kwargs)
+        output, unused_err = process.communicate()
+        retcode = process.poll()
+        if retcode:
+            cmd = kwargs.get("args")
+            if cmd is None:
+                cmd = popenargs[0]
+            raise CalledProcessError(retcode, cmd, output=output)
+        return output
+
 class ExtensionConfiguration(object):
     def __init__(self):
         self.include_dirs = []
