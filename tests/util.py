@@ -204,6 +204,9 @@ def wait_for_network_service(netloc, check_interval, num_attempts):
             break
     return ok
 
+def test_app_url(port, path, secure=False):
+    pass
+
 #
 # prepare sys.path in case we are still in the build directory
 # see also: distutils/command/build.py (build_platlib)
