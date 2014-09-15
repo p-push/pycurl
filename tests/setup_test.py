@@ -103,10 +103,12 @@ class SetupTest(unittest.TestCase):
 
     @using_curl_config('curl-config-empty')
     @using_curl('curl-with-ssl')
-    def test_ssl_define_using_curl_version_info(self):
+    def test_ssl_detection_using_curl_version_info(self):
         config = pycurl_setup.ExtensionConfiguration()
-        # ssl define should be off
+        # ssl define should be on
         assert 'HAVE_CURL_SSL' in config.define_symbols
+        # should link against nss
+        assert 'ssl3' in config.libraries
 
     @using_curl_config('curl-config-ssl-in-libs')
     def test_ssl_in_libs_sets_ssl_define(self):
