@@ -229,7 +229,7 @@ class ExtensionConfiguration(object):
 
         if not ssl_lib_detected:
             # tries to detect using curl -V.
-            # On Centos and RedHat libcurl are built with
+            # On Centos and RedHat libcurl is built with
             # static libraries disabled and 'curl-config --libs'
             # returns nothing. 'curl -V' shows information
             # about the ssl libraries.
