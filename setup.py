@@ -100,7 +100,7 @@ class ExtensionConfiguration(object):
             raise ConfigurationError(msg)
         stdout, stderr = p.communicate()
         if p.wait() != 0:
-            msg = "`%s' not found -- please install the libcurl development files or specify --curl-config=/path/to/curl-config" % CURL_CONFIG
+            msg = "`%s' not found or failed -- please install the libcurl development files or specify --curl-config=/path/to/curl-config" % CURL_CONFIG
             if stderr:
                 msg += ":\n" + stderr.decode()
             raise ConfigurationError(msg)

@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# A curl-config that pretends it does not exist.
+
+echo 'curl-config: command not found (pretending)' 1>&2
+exit 127

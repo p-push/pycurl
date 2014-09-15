@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# A curl-config that fails.
+
+echo 'curl-config: pretending to fail' 1>&2
+exit 42

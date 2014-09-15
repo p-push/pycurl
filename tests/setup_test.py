@@ -127,3 +127,35 @@ class SetupTest(unittest.TestCase):
         config = pycurl_setup.ExtensionConfiguration()
         # ssl define should be on
         assert 'HAVE_CURL_SSL' in config.define_symbols
+
+    @using_curl_config('curl-config-error')
+    def test_curl_config_error(self):
+        try:
+            config = pycurl_setup.ExtensionConfiguration()
+        except pycurl_setup.ConfigurationError:
+            pass
+        else:
+            self.fail('Failing curl-config should fail setup.py')
+
+    @using_curl_config('curl-config-missing')
+    def test_curl_config_missing(self):
+        try:
+            config = pycurl_setup.ExtensionConfiguration()
+        except pycurl_setup.ConfigurationError:
+            pass
+        else:
+            self.fail('Missing curl-config should fail setup.py')
+
+    @using_curl_config('curl-config-empty')
+    @using_curl_config('curl-error')
+    def test_curl_error(self):
+        config = pycurl_setup.ExtensionConfiguration()
+        # ssl define should be off
+        assert 'HAVE_CURL_SSL' not in config.define_symbols
+
+    @using_curl_config('curl-config-empty')
+    @using_curl_config('curl-missing')
+    def test_curl_missing(self):
+        config = pycurl_setup.ExtensionConfiguration()
+        # ssl define should be off
+        assert 'HAVE_CURL_SSL' not in config.define_symbols
