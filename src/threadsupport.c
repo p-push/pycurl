@@ -201,12 +201,109 @@ pycurl_ssl_init(void)
     return 0;
 }
 
+typedef struct PycurlGnutlsTslObject {
+    PyObject_HEAD
+    PyObject *dict;
+} PycurlGnuTsl;
+
+PYCURL_INTERNAL PyTypeObject PycurlGnutlsTsl_Type = {
+#if PY_MAJOR_VERSION >= 3
+    PyVarObject_HEAD_INIT(NULL, 0)
+#else
+    PyObject_HEAD_INIT(NULL)
+    0,                          /* ob_size */
+#endif
+    "pycurl.GnutlsTsl",         /* tp_name */
+    sizeof(PyTypeObject),    /* tp_basicsize */
+    0,                          /* tp_itemsize */
+    (destructor)PyObject_Del, /* tp_dealloc */
+    0,                          /* tp_print */
+#if PY_MAJOR_VERSION >= 3
+    0, // (getattrfunc)do_curl_getattr,  /* tp_getattr */
+    0, //(setattrfunc)do_curl_setattr,  /* tp_setattr */
+#else
+    0,  /* tp_getattr */
+    0,  /* tp_setattr */
+#endif
+    0,                          /* tp_reserved */
+    0,                          /* tp_repr */
+    0,                          /* tp_as_number */
+    0,                          /* tp_as_sequence */
+    0,                          /* tp_as_mapping */
+    0,                          /* tp_hash  */
+    0,                          /* tp_call */
+    0,                          /* tp_str */
+#if PY_MAJOR_VERSION >= 3
+    (getattrofunc)PyObject_GenericGetAttr, /* tp_getattro */
+    (setattrofunc)PyObject_GenericSetAttr, /* tp_setattro */
+#else
+    0,                          /* tp_getattro */
+    0,                          /* tp_setattro */
+#endif
+    0,                          /* tp_as_buffer */
+    0,         /* tp_flags */
+    0,                   /* tp_doc */
+    0, /* tp_traverse */
+    0,    /* tp_clear */
+    0,                          /* tp_richcompare */
+    0,                          /* tp_weaklistoffset */
+    0,                          /* tp_iter */
+    0,                          /* tp_iternext */
+    0,    /* tp_methods */
+    0,                          /* tp_members */
+    0,                          /* tp_getset */
+    0,                          /* tp_base */
+    0,                          /* tp_dict */
+    0,                          /* tp_descr_get */
+    0,                          /* tp_descr_set */
+    0,                          /* tp_dictoffset */
+    0,                          /* tp_init */
+    PyType_GenericAlloc,        /* tp_alloc */
+    0,      /* tp_new */
+    0,            /* tp_free */
+};
+
+PYCURL_INTERNAL void
+pycurl_ssl_init_ctypes(void)
+{
+    PyObject *ctypes_module = NULL;
+    PyObject *cdll = NULL;
+
+    ctypes_module = PyImport_ImportModule("ctypes");
+    if (ctypes_module == NULL) {
+        // fail
+    }
+    
+    cdll = PyObject_GetAttr(ctypes_module, "CDLL");
+    if (cdll == NULL) {
+        // fail
+    }
+    
+    library = PyObject_CallMethod(ctypes_module, "CDLL", "libgnutls.so");
+    if (library == NULL) {
+        // fail
+    }
+    
+    Py_TYPE(&PycurlGnutlsTsl_Type) = &PyType_Type;
+    
+    if (PyType_Ready(&PycurlGnutlsTsl_Type) < 0) {
+        // fail
+    }
+    
+    cls = PyObject_New(PyType_Type, &PycurlGnutlsTsl_Type);
+    
+    Py_DECREF(ctypes_module);
+    gcry_control(GCRYCTL_SET_THREAD_CBS, &pycurl_gnutls_tsl);
+}
+
 PYCURL_INTERNAL void
 pycurl_ssl_cleanup(void)
 {
     return;
 }
 #endif
+
+
 
 /*************************************************************************
 // CurlShareObject
