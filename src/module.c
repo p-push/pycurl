@@ -278,6 +278,41 @@ insint_worker(PyObject *d, PyObject *extra, char *name, long value)
             goto error; \
     } while(0)
 
+static int
+insint_curle_worker(PyObject *d, char *name, long value, PyObject *curle_reverse_map)
+{
+    PyObject *curle_name, *curle_value;
+    
+    curle_name = PyText_FromString(name);
+    if (curle_name == NULL) {
+        return -1;
+    }
+    curle_value = PyInt_FromLong(value);
+    if (curle_value == NULL) {
+        Py_DECREF(curle_name);
+        return -1;
+    }
+    
+    if (insobj2(d, NULL, name, curle_value) < 0) {
+        Py_DECREF(curle_name);
+        Py_DECREF(curle_value);
+        return -1;
+    }
+    
+    if (PyDict_SetItem(curle_reverse_map, curle_value, curle_name) < 0) {
+        Py_DECREF(curle_name);
+        Py_DECREF(curle_value);
+        return -1;
+    }
+    
+    return 0;
+}
+
+#define insint_curle(name, value) \
+    do { \
+        if (insint_curle_worker(d, (name), (value), curle_reverse_map) < 0) \
+            goto error; \
+    } while(0)
 
 #if PY_MAJOR_VERSION >= 3
 /* Used in Python 3 only, and even then this function seems to never get
@@ -328,6 +363,7 @@ initpycurl(void)
     PyObject *collections_module = NULL;
     PyObject *named_tuple = NULL;
     PyObject *arglist = NULL;
+    PyObject *curle_reverse_map = NULL;
     
     assert(Curl_Type.tp_weaklistoffset > 0);
     assert(CurlMulti_Type.tp_weaklistoffset > 0);
@@ -415,6 +451,11 @@ initpycurl(void)
     if (curlshareobject_constants == NULL)
         goto error;
 
+    curle_reverse_map = PyDict_New();
+    if (curle_reverse_map == NULL) {
+        goto error;
+    }
+    
     /* Add version strings to the module */
     libcurl_version = curl_version();
     libcurl_version_len = strlen(libcurl_version);
@@ -436,6 +477,7 @@ initpycurl(void)
     insstr_modinit(d, "version", g_pycurl_useragent);
     insint(d, "COMPILE_PY_VERSION_HEX", PY_VERSION_HEX);
     insint(d, "COMPILE_LIBCURL_VERSION_NUM", LIBCURL_VERSION_NUM);
+    insobj2_modinit(d, NULL, "ERROR_CODES", curle_reverse_map);
 
     /* Types */
     insobj2_modinit(d, NULL, "Curl", (PyObject *) p_Curl_Type);
@@ -476,137 +518,137 @@ initpycurl(void)
     insint_c(d, "INFOTYPE_SSL_DATA_OUT", CURLINFO_SSL_DATA_OUT);
 
     /* CURLcode: error codes */
-    insint_c(d, "E_OK", CURLE_OK);
-    insint_c(d, "E_AGAIN", CURLE_AGAIN);
-    insint_c(d, "E_ALREADY_COMPLETE", CURLE_ALREADY_COMPLETE);
-    insint_c(d, "E_BAD_CALLING_ORDER", CURLE_BAD_CALLING_ORDER);
-    insint_c(d, "E_BAD_PASSWORD_ENTERED", CURLE_BAD_PASSWORD_ENTERED);
-    insint_c(d, "E_FTP_BAD_DOWNLOAD_RESUME", CURLE_FTP_BAD_DOWNLOAD_RESUME);
-    insint_c(d, "E_FTP_COULDNT_SET_TYPE", CURLE_FTP_COULDNT_SET_TYPE);
-    insint_c(d, "E_FTP_PARTIAL_FILE", CURLE_FTP_PARTIAL_FILE);
-    insint_c(d, "E_FTP_USER_PASSWORD_INCORRECT", CURLE_FTP_USER_PASSWORD_INCORRECT);
-    insint_c(d, "E_HTTP_NOT_FOUND", CURLE_HTTP_NOT_FOUND);
-    insint_c(d, "E_HTTP_PORT_FAILED", CURLE_HTTP_PORT_FAILED);
-    insint_c(d, "E_MALFORMAT_USER", CURLE_MALFORMAT_USER);
-    insint_c(d, "E_QUOTE_ERROR", CURLE_QUOTE_ERROR);
-    insint_c(d, "E_RANGE_ERROR", CURLE_RANGE_ERROR);
-    insint_c(d, "E_REMOTE_ACCESS_DENIED", CURLE_REMOTE_ACCESS_DENIED);
-    insint_c(d, "E_REMOTE_DISK_FULL", CURLE_REMOTE_DISK_FULL);
-    insint_c(d, "E_REMOTE_FILE_EXISTS", CURLE_REMOTE_FILE_EXISTS);
-    insint_c(d, "E_UPLOAD_FAILED", CURLE_UPLOAD_FAILED);
-    insint_c(d, "E_URL_MALFORMAT_USER", CURLE_URL_MALFORMAT_USER);
-    insint_c(d, "E_USE_SSL_FAILED", CURLE_USE_SSL_FAILED);
-    insint_c(d, "E_UNSUPPORTED_PROTOCOL", CURLE_UNSUPPORTED_PROTOCOL);
-    insint_c(d, "E_FAILED_INIT", CURLE_FAILED_INIT);
-    insint_c(d, "E_URL_MALFORMAT", CURLE_URL_MALFORMAT);
+    insint_curle("E_OK", CURLE_OK);
+    insint_curle("E_AGAIN", CURLE_AGAIN);
+    insint_curle("E_ALREADY_COMPLETE", CURLE_ALREADY_COMPLETE);
+    insint_curle("E_BAD_CALLING_ORDER", CURLE_BAD_CALLING_ORDER);
+    insint_curle("E_BAD_PASSWORD_ENTERED", CURLE_BAD_PASSWORD_ENTERED);
+    insint_curle("E_FTP_BAD_DOWNLOAD_RESUME", CURLE_FTP_BAD_DOWNLOAD_RESUME);
+    insint_curle("E_FTP_COULDNT_SET_TYPE", CURLE_FTP_COULDNT_SET_TYPE);
+    insint_curle("E_FTP_PARTIAL_FILE", CURLE_FTP_PARTIAL_FILE);
+    insint_curle("E_FTP_USER_PASSWORD_INCORRECT", CURLE_FTP_USER_PASSWORD_INCORRECT);
+    insint_curle("E_HTTP_NOT_FOUND", CURLE_HTTP_NOT_FOUND);
+    insint_curle("E_HTTP_PORT_FAILED", CURLE_HTTP_PORT_FAILED);
+    insint_curle("E_MALFORMAT_USER", CURLE_MALFORMAT_USER);
+    insint_curle("E_QUOTE_ERROR", CURLE_QUOTE_ERROR);
+    insint_curle("E_RANGE_ERROR", CURLE_RANGE_ERROR);
+    insint_curle("E_REMOTE_ACCESS_DENIED", CURLE_REMOTE_ACCESS_DENIED);
+    insint_curle("E_REMOTE_DISK_FULL", CURLE_REMOTE_DISK_FULL);
+    insint_curle("E_REMOTE_FILE_EXISTS", CURLE_REMOTE_FILE_EXISTS);
+    insint_curle("E_UPLOAD_FAILED", CURLE_UPLOAD_FAILED);
+    insint_curle("E_URL_MALFORMAT_USER", CURLE_URL_MALFORMAT_USER);
+    insint_curle("E_USE_SSL_FAILED", CURLE_USE_SSL_FAILED);
+    insint_curle("E_UNSUPPORTED_PROTOCOL", CURLE_UNSUPPORTED_PROTOCOL);
+    insint_curle("E_FAILED_INIT", CURLE_FAILED_INIT);
+    insint_curle("E_URL_MALFORMAT", CURLE_URL_MALFORMAT);
 #ifdef HAVE_CURL_7_21_5
-    insint_c(d, "E_NOT_BUILT_IN", CURLE_NOT_BUILT_IN);
+    insint_curle("E_NOT_BUILT_IN", CURLE_NOT_BUILT_IN);
 #endif
-    insint_c(d, "E_COULDNT_RESOLVE_PROXY", CURLE_COULDNT_RESOLVE_PROXY);
-    insint_c(d, "E_COULDNT_RESOLVE_HOST", CURLE_COULDNT_RESOLVE_HOST);
-    insint_c(d, "E_COULDNT_CONNECT", CURLE_COULDNT_CONNECT);
-    insint_c(d, "E_FTP_WEIRD_SERVER_REPLY", CURLE_FTP_WEIRD_SERVER_REPLY);
-    insint_c(d, "E_FTP_ACCESS_DENIED", CURLE_FTP_ACCESS_DENIED);
+    insint_curle("E_COULDNT_RESOLVE_PROXY", CURLE_COULDNT_RESOLVE_PROXY);
+    insint_curle("E_COULDNT_RESOLVE_HOST", CURLE_COULDNT_RESOLVE_HOST);
+    insint_curle("E_COULDNT_CONNECT", CURLE_COULDNT_CONNECT);
+    insint_curle("E_FTP_WEIRD_SERVER_REPLY", CURLE_FTP_WEIRD_SERVER_REPLY);
+    insint_curle("E_FTP_ACCESS_DENIED", CURLE_FTP_ACCESS_DENIED);
 #ifdef HAVE_CURL_7_24_0
-    insint_c(d, "E_FTP_ACCEPT_FAILED", CURLE_FTP_ACCEPT_FAILED);
+    insint_curle("E_FTP_ACCEPT_FAILED", CURLE_FTP_ACCEPT_FAILED);
 #endif
-    insint_c(d, "E_FTP_WEIRD_PASS_REPLY", CURLE_FTP_WEIRD_PASS_REPLY);
-    insint_c(d, "E_FTP_WEIRD_USER_REPLY", CURLE_FTP_WEIRD_USER_REPLY);
-    insint_c(d, "E_FTP_WEIRD_PASV_REPLY", CURLE_FTP_WEIRD_PASV_REPLY);
-    insint_c(d, "E_FTP_WEIRD_227_FORMAT", CURLE_FTP_WEIRD_227_FORMAT);
-    insint_c(d, "E_FTP_CANT_GET_HOST", CURLE_FTP_CANT_GET_HOST);
-    insint_c(d, "E_FTP_CANT_RECONNECT", CURLE_FTP_CANT_RECONNECT);
-    insint_c(d, "E_FTP_COULDNT_SET_BINARY", CURLE_FTP_COULDNT_SET_BINARY);
-    insint_c(d, "E_PARTIAL_FILE", CURLE_PARTIAL_FILE);
-    insint_c(d, "E_FTP_COULDNT_RETR_FILE", CURLE_FTP_COULDNT_RETR_FILE);
-    insint_c(d, "E_FTP_WRITE_ERROR", CURLE_FTP_WRITE_ERROR);
-    insint_c(d, "E_FTP_QUOTE_ERROR", CURLE_FTP_QUOTE_ERROR);
-    insint_c(d, "E_HTTP_RETURNED_ERROR", CURLE_HTTP_RETURNED_ERROR);
-    insint_c(d, "E_WRITE_ERROR", CURLE_WRITE_ERROR);
-    insint_c(d, "E_FTP_COULDNT_STOR_FILE", CURLE_FTP_COULDNT_STOR_FILE);
-    insint_c(d, "E_READ_ERROR", CURLE_READ_ERROR);
-    insint_c(d, "E_OUT_OF_MEMORY", CURLE_OUT_OF_MEMORY);
-    insint_c(d, "E_OPERATION_TIMEOUTED", CURLE_OPERATION_TIMEOUTED);
-    insint_c(d, "E_OPERATION_TIMEDOUT", CURLE_OPERATION_TIMEDOUT);
-    insint_c(d, "E_FTP_COULDNT_SET_ASCII", CURLE_FTP_COULDNT_SET_ASCII);
-    insint_c(d, "E_FTP_PORT_FAILED", CURLE_FTP_PORT_FAILED);
-    insint_c(d, "E_FTP_COULDNT_USE_REST", CURLE_FTP_COULDNT_USE_REST);
-    insint_c(d, "E_FTP_COULDNT_GET_SIZE", CURLE_FTP_COULDNT_GET_SIZE);
-    insint_c(d, "E_HTTP_RANGE_ERROR", CURLE_HTTP_RANGE_ERROR);
-    insint_c(d, "E_HTTP_POST_ERROR", CURLE_HTTP_POST_ERROR);
-    insint_c(d, "E_SSL_CACERT", CURLE_SSL_CACERT);
-    insint_c(d, "E_SSL_CACERT_BADFILE", CURLE_SSL_CACERT_BADFILE);
-    insint_c(d, "E_SSL_CERTPROBLEM", CURLE_SSL_CERTPROBLEM);
-    insint_c(d, "E_SSL_CIPHER", CURLE_SSL_CIPHER);
-    insint_c(d, "E_SSL_CONNECT_ERROR", CURLE_SSL_CONNECT_ERROR);
-    insint_c(d, "E_SSL_CRL_BADFILE", CURLE_SSL_CRL_BADFILE);
-    insint_c(d, "E_SSL_ENGINE_INITFAILED", CURLE_SSL_ENGINE_INITFAILED);
-    insint_c(d, "E_SSL_ENGINE_NOTFOUND", CURLE_SSL_ENGINE_NOTFOUND);
-    insint_c(d, "E_SSL_ENGINE_SETFAILED", CURLE_SSL_ENGINE_SETFAILED);
+    insint_curle("E_FTP_WEIRD_PASS_REPLY", CURLE_FTP_WEIRD_PASS_REPLY);
+    insint_curle("E_FTP_WEIRD_USER_REPLY", CURLE_FTP_WEIRD_USER_REPLY);
+    insint_curle("E_FTP_WEIRD_PASV_REPLY", CURLE_FTP_WEIRD_PASV_REPLY);
+    insint_curle("E_FTP_WEIRD_227_FORMAT", CURLE_FTP_WEIRD_227_FORMAT);
+    insint_curle("E_FTP_CANT_GET_HOST", CURLE_FTP_CANT_GET_HOST);
+    insint_curle("E_FTP_CANT_RECONNECT", CURLE_FTP_CANT_RECONNECT);
+    insint_curle("E_FTP_COULDNT_SET_BINARY", CURLE_FTP_COULDNT_SET_BINARY);
+    insint_curle("E_PARTIAL_FILE", CURLE_PARTIAL_FILE);
+    insint_curle("E_FTP_COULDNT_RETR_FILE", CURLE_FTP_COULDNT_RETR_FILE);
+    insint_curle("E_FTP_WRITE_ERROR", CURLE_FTP_WRITE_ERROR);
+    insint_curle("E_FTP_QUOTE_ERROR", CURLE_FTP_QUOTE_ERROR);
+    insint_curle("E_HTTP_RETURNED_ERROR", CURLE_HTTP_RETURNED_ERROR);
+    insint_curle("E_WRITE_ERROR", CURLE_WRITE_ERROR);
+    insint_curle("E_FTP_COULDNT_STOR_FILE", CURLE_FTP_COULDNT_STOR_FILE);
+    insint_curle("E_READ_ERROR", CURLE_READ_ERROR);
+    insint_curle("E_OUT_OF_MEMORY", CURLE_OUT_OF_MEMORY);
+    insint_curle("E_OPERATION_TIMEOUTED", CURLE_OPERATION_TIMEOUTED);
+    insint_curle("E_OPERATION_TIMEDOUT", CURLE_OPERATION_TIMEDOUT);
+    insint_curle("E_FTP_COULDNT_SET_ASCII", CURLE_FTP_COULDNT_SET_ASCII);
+    insint_curle("E_FTP_PORT_FAILED", CURLE_FTP_PORT_FAILED);
+    insint_curle("E_FTP_COULDNT_USE_REST", CURLE_FTP_COULDNT_USE_REST);
+    insint_curle("E_FTP_COULDNT_GET_SIZE", CURLE_FTP_COULDNT_GET_SIZE);
+    insint_curle("E_HTTP_RANGE_ERROR", CURLE_HTTP_RANGE_ERROR);
+    insint_curle("E_HTTP_POST_ERROR", CURLE_HTTP_POST_ERROR);
+    insint_curle("E_SSL_CACERT", CURLE_SSL_CACERT);
+    insint_curle("E_SSL_CACERT_BADFILE", CURLE_SSL_CACERT_BADFILE);
+    insint_curle("E_SSL_CERTPROBLEM", CURLE_SSL_CERTPROBLEM);
+    insint_curle("E_SSL_CIPHER", CURLE_SSL_CIPHER);
+    insint_curle("E_SSL_CONNECT_ERROR", CURLE_SSL_CONNECT_ERROR);
+    insint_curle("E_SSL_CRL_BADFILE", CURLE_SSL_CRL_BADFILE);
+    insint_curle("E_SSL_ENGINE_INITFAILED", CURLE_SSL_ENGINE_INITFAILED);
+    insint_curle("E_SSL_ENGINE_NOTFOUND", CURLE_SSL_ENGINE_NOTFOUND);
+    insint_curle("E_SSL_ENGINE_SETFAILED", CURLE_SSL_ENGINE_SETFAILED);
 #if LIBCURL_VERSION_NUM >= MAKE_LIBCURL_VERSION(7, 41, 0)
-    insint_c(d, "E_SSL_INVALIDCERTSTATUS", CURLE_SSL_INVALIDCERTSTATUS);
+    insint_curle("E_SSL_INVALIDCERTSTATUS", CURLE_SSL_INVALIDCERTSTATUS);
 #endif
-    insint_c(d, "E_SSL_ISSUER_ERROR", CURLE_SSL_ISSUER_ERROR);
-    insint_c(d, "E_SSL_PEER_CERTIFICATE", CURLE_SSL_PEER_CERTIFICATE);
+    insint_curle("E_SSL_ISSUER_ERROR", CURLE_SSL_ISSUER_ERROR);
+    insint_curle("E_SSL_PEER_CERTIFICATE", CURLE_SSL_PEER_CERTIFICATE);
 #if LIBCURL_VERSION_NUM >= MAKE_LIBCURL_VERSION(7, 39, 0)
-    insint_c(d, "E_SSL_PINNEDPUBKEYNOTMATCH", CURLE_SSL_PINNEDPUBKEYNOTMATCH);
+    insint_curle("E_SSL_PINNEDPUBKEYNOTMATCH", CURLE_SSL_PINNEDPUBKEYNOTMATCH);
 #endif
-    insint_c(d, "E_SSL_SHUTDOWN_FAILED", CURLE_SSL_SHUTDOWN_FAILED);
-    insint_c(d, "E_BAD_DOWNLOAD_RESUME", CURLE_BAD_DOWNLOAD_RESUME);
-    insint_c(d, "E_FILE_COULDNT_READ_FILE", CURLE_FILE_COULDNT_READ_FILE);
-    insint_c(d, "E_LDAP_CANNOT_BIND", CURLE_LDAP_CANNOT_BIND);
-    insint_c(d, "E_LDAP_SEARCH_FAILED", CURLE_LDAP_SEARCH_FAILED);
-    insint_c(d, "E_LIBRARY_NOT_FOUND", CURLE_LIBRARY_NOT_FOUND);
-    insint_c(d, "E_FUNCTION_NOT_FOUND", CURLE_FUNCTION_NOT_FOUND);
-    insint_c(d, "E_ABORTED_BY_CALLBACK", CURLE_ABORTED_BY_CALLBACK);
-    insint_c(d, "E_BAD_FUNCTION_ARGUMENT", CURLE_BAD_FUNCTION_ARGUMENT);
-    insint_c(d, "E_INTERFACE_FAILED", CURLE_INTERFACE_FAILED);
-    insint_c(d, "E_TOO_MANY_REDIRECTS", CURLE_TOO_MANY_REDIRECTS);
+    insint_curle("E_SSL_SHUTDOWN_FAILED", CURLE_SSL_SHUTDOWN_FAILED);
+    insint_curle("E_BAD_DOWNLOAD_RESUME", CURLE_BAD_DOWNLOAD_RESUME);
+    insint_curle("E_FILE_COULDNT_READ_FILE", CURLE_FILE_COULDNT_READ_FILE);
+    insint_curle("E_LDAP_CANNOT_BIND", CURLE_LDAP_CANNOT_BIND);
+    insint_curle("E_LDAP_SEARCH_FAILED", CURLE_LDAP_SEARCH_FAILED);
+    insint_curle("E_LIBRARY_NOT_FOUND", CURLE_LIBRARY_NOT_FOUND);
+    insint_curle("E_FUNCTION_NOT_FOUND", CURLE_FUNCTION_NOT_FOUND);
+    insint_curle("E_ABORTED_BY_CALLBACK", CURLE_ABORTED_BY_CALLBACK);
+    insint_curle("E_BAD_FUNCTION_ARGUMENT", CURLE_BAD_FUNCTION_ARGUMENT);
+    insint_curle("E_INTERFACE_FAILED", CURLE_INTERFACE_FAILED);
+    insint_curle("E_TOO_MANY_REDIRECTS", CURLE_TOO_MANY_REDIRECTS);
 #ifdef HAVE_CURL_7_21_5
-    insint_c(d, "E_UNKNOWN_OPTION", CURLE_UNKNOWN_OPTION);
+    insint_curle("E_UNKNOWN_OPTION", CURLE_UNKNOWN_OPTION);
 #endif
     /* same as E_UNKNOWN_OPTION */
-    insint_c(d, "E_UNKNOWN_TELNET_OPTION", CURLE_UNKNOWN_TELNET_OPTION);
-    insint_c(d, "E_TELNET_OPTION_SYNTAX", CURLE_TELNET_OPTION_SYNTAX);
-    insint_c(d, "E_GOT_NOTHING", CURLE_GOT_NOTHING);
-    insint_c(d, "E_SEND_ERROR", CURLE_SEND_ERROR);
-    insint_c(d, "E_RECV_ERROR", CURLE_RECV_ERROR);
-    insint_c(d, "E_SHARE_IN_USE", CURLE_SHARE_IN_USE);
-    insint_c(d, "E_BAD_CONTENT_ENCODING", CURLE_BAD_CONTENT_ENCODING);
-    insint_c(d, "E_LDAP_INVALID_URL", CURLE_LDAP_INVALID_URL);
-    insint_c(d, "E_FILESIZE_EXCEEDED", CURLE_FILESIZE_EXCEEDED);
-    insint_c(d, "E_FTP_SSL_FAILED", CURLE_FTP_SSL_FAILED);
-    insint_c(d, "E_SEND_FAIL_REWIND", CURLE_SEND_FAIL_REWIND);
-    insint_c(d, "E_LOGIN_DENIED", CURLE_LOGIN_DENIED);
-    insint_c(d, "E_PEER_FAILED_VERIFICATION", CURLE_PEER_FAILED_VERIFICATION);
-    insint_c(d, "E_TFTP_NOTFOUND", CURLE_TFTP_NOTFOUND);
-    insint_c(d, "E_TFTP_PERM", CURLE_TFTP_PERM);
-    insint_c(d, "E_TFTP_DISKFULL", CURLE_TFTP_DISKFULL);
-    insint_c(d, "E_TFTP_ILLEGAL", CURLE_TFTP_ILLEGAL);
-    insint_c(d, "E_TFTP_UNKNOWNID", CURLE_TFTP_UNKNOWNID);
-    insint_c(d, "E_TFTP_EXISTS", CURLE_TFTP_EXISTS);
-    insint_c(d, "E_TFTP_NOSUCHUSER", CURLE_TFTP_NOSUCHUSER);
-    insint_c(d, "E_CONV_FAILED", CURLE_CONV_FAILED);
-    insint_c(d, "E_CONV_REQD", CURLE_CONV_REQD);
-    insint_c(d, "E_REMOTE_FILE_NOT_FOUND", CURLE_REMOTE_FILE_NOT_FOUND);
-    insint_c(d, "E_SSH", CURLE_SSH);
+    insint_curle("E_UNKNOWN_TELNET_OPTION", CURLE_UNKNOWN_TELNET_OPTION);
+    insint_curle("E_TELNET_OPTION_SYNTAX", CURLE_TELNET_OPTION_SYNTAX);
+    insint_curle("E_GOT_NOTHING", CURLE_GOT_NOTHING);
+    insint_curle("E_SEND_ERROR", CURLE_SEND_ERROR);
+    insint_curle("E_RECV_ERROR", CURLE_RECV_ERROR);
+    insint_curle("E_SHARE_IN_USE", CURLE_SHARE_IN_USE);
+    insint_curle("E_BAD_CONTENT_ENCODING", CURLE_BAD_CONTENT_ENCODING);
+    insint_curle("E_LDAP_INVALID_URL", CURLE_LDAP_INVALID_URL);
+    insint_curle("E_FILESIZE_EXCEEDED", CURLE_FILESIZE_EXCEEDED);
+    insint_curle("E_FTP_SSL_FAILED", CURLE_FTP_SSL_FAILED);
+    insint_curle("E_SEND_FAIL_REWIND", CURLE_SEND_FAIL_REWIND);
+    insint_curle("E_LOGIN_DENIED", CURLE_LOGIN_DENIED);
+    insint_curle("E_PEER_FAILED_VERIFICATION", CURLE_PEER_FAILED_VERIFICATION);
+    insint_curle("E_TFTP_NOTFOUND", CURLE_TFTP_NOTFOUND);
+    insint_curle("E_TFTP_PERM", CURLE_TFTP_PERM);
+    insint_curle("E_TFTP_DISKFULL", CURLE_TFTP_DISKFULL);
+    insint_curle("E_TFTP_ILLEGAL", CURLE_TFTP_ILLEGAL);
+    insint_curle("E_TFTP_UNKNOWNID", CURLE_TFTP_UNKNOWNID);
+    insint_curle("E_TFTP_EXISTS", CURLE_TFTP_EXISTS);
+    insint_curle("E_TFTP_NOSUCHUSER", CURLE_TFTP_NOSUCHUSER);
+    insint_curle("E_CONV_FAILED", CURLE_CONV_FAILED);
+    insint_curle("E_CONV_REQD", CURLE_CONV_REQD);
+    insint_curle("E_REMOTE_FILE_NOT_FOUND", CURLE_REMOTE_FILE_NOT_FOUND);
+    insint_curle("E_SSH", CURLE_SSH);
 #if LIBCURL_VERSION_NUM >= MAKE_LIBCURL_VERSION(7, 20, 0)
-    insint_c(d, "E_FTP_PRET_FAILED", CURLE_FTP_PRET_FAILED);
-    insint_c(d, "E_RTSP_CSEQ_ERROR", CURLE_RTSP_CSEQ_ERROR);
-    insint_c(d, "E_RTSP_SESSION_ERROR", CURLE_RTSP_SESSION_ERROR);
+    insint_curle("E_FTP_PRET_FAILED", CURLE_FTP_PRET_FAILED);
+    insint_curle("E_RTSP_CSEQ_ERROR", CURLE_RTSP_CSEQ_ERROR);
+    insint_curle("E_RTSP_SESSION_ERROR", CURLE_RTSP_SESSION_ERROR);
 #endif
 #if LIBCURL_VERSION_NUM >= MAKE_LIBCURL_VERSION(7, 21, 0)
-    insint_c(d, "E_CHUNK_FAILED", CURLE_CHUNK_FAILED);
-    insint_c(d, "E_FTP_BAD_FILE_LIST", CURLE_FTP_BAD_FILE_LIST);
+    insint_curle("E_CHUNK_FAILED", CURLE_CHUNK_FAILED);
+    insint_curle("E_FTP_BAD_FILE_LIST", CURLE_FTP_BAD_FILE_LIST);
 #endif
 #if LIBCURL_VERSION_NUM >= MAKE_LIBCURL_VERSION(7, 24, 0)
-    insint_c(d, "E_FTP_ACCEPT_TIMEOUT", CURLE_FTP_ACCEPT_TIMEOUT);
+    insint_curle("E_FTP_ACCEPT_TIMEOUT", CURLE_FTP_ACCEPT_TIMEOUT);
 #endif
 #if LIBCURL_VERSION_NUM >= MAKE_LIBCURL_VERSION(7, 30, 0)
-    insint_c(d, "E_NO_CONNECTION_AVAILABLE", CURLE_NO_CONNECTION_AVAILABLE);
+    insint_curle("E_NO_CONNECTION_AVAILABLE", CURLE_NO_CONNECTION_AVAILABLE);
 #endif
 #if LIBCURL_VERSION_NUM >= MAKE_LIBCURL_VERSION(7, 38, 0)
-    insint_c(d, "E_HTTP2", CURLE_HTTP2);
+    insint_curle("E_HTTP2", CURLE_HTTP2);
 #endif
 
     /* curl_proxytype: constants for setopt(PROXYTYPE, x) */
