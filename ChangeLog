@@ -84,6 +84,10 @@ Version 7.21.5 [requires libcurl-7.19.0 or better] - 2016-01-05
 
         * --with-openssl added as an alias for --with-ssl option to setup.py.
 
+        * Official Windows builds are now linked against Windows IDN APIs.
+          This requires Windows Vista or greater or installation of
+          http://www.microsoft.com/downloads/details.aspx?FamilyID=AD6158D7-DDBA-416A-9109-07607425A815.
+
         * Official Windows builds are now linked against C-Ares and libssh2.
 
         * Official Windows builds are now linked against OpenSSL instead of

@@ -495,7 +495,7 @@ class LibcurlBuilder(Builder):
                     f.write("set include=%%include%%;%s\n" % libssh2_builder.include_path)
                     f.write("set lib=%%lib%%;%s\n" % libssh2_builder.lib_path)
                     extra_options += ' WITH_SSH2=%s' % dll_or_static
-                f.write("nmake /f Makefile.vc ENABLE_IDN=no%s\n" % extra_options)
+                f.write("nmake /f Makefile.vc ENABLE_IDN=yes%s\n" % extra_options)
 
     @property
     def output_dir_name(self):
