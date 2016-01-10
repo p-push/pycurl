@@ -1161,6 +1161,11 @@ initpycurl(void)
     insint_c(d, "REDIR_POST_ALL", CURL_REDIR_POST_ALL);
 #endif
 
+#if LIBCURL_VERSION_NUM >= MAKE_LIBCURL_VERSION(7, 21, 4)
+    insint_c(d, "TLSAUTH_NONE", CURL_TLSAUTH_NONE);
+    insint_c(d, "TLSAUTH_SRP", CURL_TLSAUTH_SRP);
+#endif
+
     /* options for global_init() */
     insint(d, "GLOBAL_SSL", CURL_GLOBAL_SSL);
     insint(d, "GLOBAL_WIN32", CURL_GLOBAL_WIN32);
