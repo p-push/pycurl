@@ -446,3 +446,33 @@ class OptionConstantsSettingTest(unittest.TestCase):
     @util.min_libcurl(7, 33, 0)
     def test_xauth_bearer(self):
         self.curl.setopt(self.curl.XOAUTH2_BEARER, 'test')
+
+    @nose.plugins.attrib.attr('c-ares')
+    @util.min_libcurl(7, 33, 0)
+    def test_dns_interface(self):
+        self.curl.setopt(self.curl.DNS_INTERFACE, "eth0")
+
+    @nose.plugins.attrib.attr('c-ares')
+    @util.min_libcurl(7, 33, 0)
+    def test_unset_dns_interface(self):
+        self.curl.setopt(self.curl.DNS_INTERFACE, None)
+
+    @nose.plugins.attrib.attr('c-ares')
+    @util.min_libcurl(7, 33, 0)
+    def test_dns_local_ip6(self):
+        self.curl.setopt(self.curl.DNS_LOCAL_IP6, "::1")
+
+    @nose.plugins.attrib.attr('c-ares')
+    @util.min_libcurl(7, 33, 0)
+    def test_unset_dns_local_ip6(self):
+        self.curl.setopt(self.curl.DNS_LOCAL_IP6, None)
+
+    @nose.plugins.attrib.attr('c-ares')
+    @util.min_libcurl(7, 33, 0)
+    def test_dns_local_ip4(self):
+        self.curl.setopt(self.curl.DNS_LOCAL_IP4, "0.0.0.0")
+
+    @nose.plugins.attrib.attr('c-ares')
+    @util.min_libcurl(7, 33, 0)
+    def test_unset_dns_local_ip4(self):
+        self.curl.setopt(self.curl.DNS_LOCAL_IP4, None)
