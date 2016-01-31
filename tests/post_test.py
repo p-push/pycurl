@@ -82,7 +82,16 @@ class PostTest(unittest.TestCase):
             'field3': 'this is wei\000rd, but null-bytes are okay',
         }
         self.check_post(send, expect, 'http://localhost:8380/postfields')
-    
+
+    def test_post_contentheader(self):
+        send = [
+            ('field3', (pycurl.FORM_CONTENTHEADER, 'x-header: test-value'))
+        ]
+        expect = {
+            'field3': 'this is wei\000rd, but null-bytes are okay',
+        }
+        self.check_post(send, expect, 'http://localhost:8380/postfields')
+
     def test_post_file(self):
         path = os.path.join(os.path.dirname(__file__), '..', 'README.rst')
         f = open(path)

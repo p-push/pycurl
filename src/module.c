@@ -651,6 +651,7 @@ initpycurl(void)
     insint_c(d, "FORM_FILE", CURLFORM_FILE);
     insint_c(d, "FORM_CONTENTTYPE", CURLFORM_CONTENTTYPE);
     insint_c(d, "FORM_FILENAME", CURLFORM_FILENAME);
+    insint_c(d, "FORM_CONTENTHEADER", CURLFORM_CONTENTHEADER);
 
     /* FTP_FILEMETHOD options */
     insint_c(d, "FTPMETHOD_DEFAULT", CURLFTPMETHOD_DEFAULT);
