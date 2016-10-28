@@ -44,7 +44,7 @@ About libcurl
   many known, big and successful `companies`_ and numerous `applications`_.
 
 .. _free: https://curl.haxx.se/docs/copyright.html
-.. _thread-safe: https://curl.haxx.se/libcurl/features.html#thread
+.. _thread-safe: https://curl.haxx.se/libcurl/c/threadsafe.html
 .. _`IPv6 compatible`: https://curl.haxx.se/libcurl/features.html#ipv6
 .. _`feature rich`: https://curl.haxx.se/libcurl/features.html#features
 .. _`well supported`: https://curl.haxx.se/libcurl/features.html#support
@@ -122,6 +122,7 @@ Documentation Contents
    curl
    unicode
    files
+   thread-safety
    unimplemented
 
 
