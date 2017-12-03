@@ -812,6 +812,38 @@ PycURL Windows options:
  --with-ssl                            legacy alias for --with-openssl
 '''
 
+def dir_ok(dir):
+    if os.path.basename(dir).lower() in ['um', 'ucrt', 'winrt']:
+        return False
+    if 'windows kits' in dir.lower():
+        return False
+    if 'microsoft sdks' in dir.lower():
+        return True
+    return True
+
+def hack_paths():
+    ci_environ = {}
+    for key in os.environ:
+        ci_environ[key.lower()] = os.environ[key]
+        
+    dirs = []
+    for dir in ci_environ['include'].split(':'):
+        if dir_ok(dir):
+            dirs.append(dir)
+    os.environ['include'] = ':'.join(dirs)
+
+    from distutils import _msvccompiler
+    orig_add_include_dir = _msvccompiler.MSVCCompiler.add_include_dir
+
+    def add_include_dir(self, dir):
+        #import pdb;pdb.set_trace()
+        if not dir_ok(dir):
+            return
+        print(dir)
+        orig_add_include_dir(self, dir)
+
+    _msvccompiler.MSVCCompiler.add_include_dir = add_include_dir
+
 if __name__ == "__main__":
     if '--help' in sys.argv or '-h' in sys.argv:
         # unfortunately this help precedes distutils help
@@ -833,6 +865,7 @@ if __name__ == "__main__":
     elif len(sys.argv) > 1 and sys.argv[1] == 'docstrings-sources':
         gen_docstrings_sources()
     else:
+        hack_paths()
         setup_args['data_files'] = get_data_files()
         if 'PYCURL_RELEASE' in os.environ and os.environ['PYCURL_RELEASE'].lower() in ['1', 'yes', 'true']:
             split_extension_source = False

@@ -288,6 +288,7 @@ class Builder(object):
                     f.write('set lib=%s\\lib\\x64;%%lib%%\n' % windows_sdk_path)
                     f.write('set path=%s\\bin\\x64;%%path%%\n' % windows_sdk_path)
             f.write(self.nasm_cmd)
+            f.write("env\n")
             yield f
         if False:
             print("Executing:")
