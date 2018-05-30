@@ -859,6 +859,9 @@ class LibcurlBuilder(StandardBuilder):
             if self.bconf.vc_version == 'vc9':
                 # need this normaliz.lib to build pycurl later on
                 shutil.copy('winbuild/support/normaliz.lib', 'dist/lib/normaliz.lib')
+                
+            # need libcurl.lib to build pycurl with --curl-dir argument
+            shutil.copy('dist/lib/libcurl_a.lib', 'dist/lib/libcurl.lib')
 
     @property
     def dll_paths(self):
