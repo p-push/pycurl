@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # vi:ts=4:et
 
+import re
 import pycurl
 import sys
 import unittest
@@ -30,6 +31,15 @@ class ErrorTest(unittest.TestCase):
             self.assertEqual(pycurl.E_URL_MALFORMAT, err)
             # possibly fragile
             self.assertEqual('No URL set!', msg)
+        else:
+            self.fail('Expected pycurl.error to be raised')
+
+    def test_pycurl_error_name(self):
+        try:
+            # perform without a url
+            self.curl.perform()
+        except pycurl.error as exc:
+            assert re.match(r'\(3, \'.*\'\) (E_URL_MALFORMAT)$', str(exc)), 'Exception serialization not in expected format: %s' % str(exc)
         else:
             self.fail('Expected pycurl.error to be raised')
     
