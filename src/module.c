@@ -432,7 +432,8 @@ initpycurl(void)
     /* Add error object to the module */
     d = PyModule_GetDict(m);
     assert(d != NULL);
-    ErrorObject = PyErr_NewException("pycurl.error", NULL, NULL);
+    /* error_doc is a const char * on python 3.5, char * on python 2.7 */
+    ErrorObject = PyErr_NewExceptionWithDoc("pycurl.error", (char *) error_doc, NULL, NULL);
     if (ErrorObject == NULL)
         goto error;
     if (PyDict_SetItemString(d, "error", ErrorObject) < 0) {

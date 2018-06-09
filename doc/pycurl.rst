@@ -31,4 +31,7 @@ pycurl Module Functionality
 .. autoclass:: pycurl.CurlShare
     :noindex:
 
+.. autoexception:: pycurl.error
+    :noindex:
+
 .. _curl_version: https://curl.haxx.se/libcurl/c/curl_version.html

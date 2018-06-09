@@ -58,6 +58,7 @@ DOCSTRINGS_SOURCES = \
 	doc/docstrings/curl_setopt.rst \
 	doc/docstrings/curl_unsetopt.rst \
 	doc/docstrings/curl_set_ca_certs.rst \
+	doc/docstrings/error.rst \
 	doc/docstrings/multi.rst \
 	doc/docstrings/multi_add_handle.rst \
 	doc/docstrings/multi_assign.rst \
@@ -192,7 +193,7 @@ rsync-prepare:
 	chmod $(CHMOD_VERBOSE) o-rwx $(BUILD_WWW)/upload
 	#-rm -rf `find $(BUILD_WWW) -name .xvpics -type d -print`
 
-.PHONY: all build test do-test strip install install_lib \
+.PHONY: all gen build test do-test strip install install_lib \
 	clean distclean maintainer-clean dist sdist \
 	docs docs-force \
 	rsync rsync-dry rsync-check rsync-prepare
